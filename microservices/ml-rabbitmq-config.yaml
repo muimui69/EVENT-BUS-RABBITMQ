@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ml-rabbitmq-config
+  namespace: default
+data:
+  rabbitmq.properties: |
+    rabbitmq.host=rabbitmq.middleware.svc.cluster.local
+    rabbitmq.port=5672
+    rabbitmq.username=ml_service
+    rabbitmq.password=${RABBITMQ_ML_PASSWORD}
+    rabbitmq.virtual-host=/
+    
+    # Configuración de intercambios
+    rabbitmq.exchange.erp-data=erp.data_changes
+    rabbitmq.exchange.ml-score=ml.score_updates
+    
+    # Colas
+    rabbitmq.queue.erp-data-updates=ml.erp_data_updates

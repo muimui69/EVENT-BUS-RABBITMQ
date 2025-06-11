@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blockchain-rabbitmq-config
+  namespace: default
+data:
+  rabbitmq.properties: |
+    # Configuración de conexión
+    spring.rabbitmq.host=rabbitmq.middleware.svc.cluster.local
+    spring.rabbitmq.port=5672
+    spring.rabbitmq.username=blockchain_service
+    spring.rabbitmq.password=${RABBITMQ_BLOCKCHAIN_PASSWORD}
+    spring.rabbitmq.virtual-host=/
+
+    # Configuración de intercambios
+    rabbitmq.exchange.erp-data=erp.data_changes
+    rabbitmq.exchange.blockchain=blockchain.events
+
+    # Colas
+    rabbitmq.queue.loan-create=blockchain.loan_create
+    rabbitmq.queue.payment-confirm=blockchain.payment_confirm
+    rabbitmq.queue.contract-events=blockchain.contract_events
+
+    # Configuración de publicación de transacciones
+    rabbitmq.exchange.tx-status=blockchain.tx_status

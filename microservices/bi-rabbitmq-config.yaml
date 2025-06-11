@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kpi-rabbitmq-config
+  namespace: default
+data:
+  rabbitmq.properties: |
+    spring.rabbitmq.host=rabbitmq.middleware.svc.cluster.local
+    spring.rabbitmq.port=5672
+    spring.rabbitmq.username=bi_service
+    spring.rabbitmq.password=${RABBITMQ_KPI_PASSWORD}
+    spring.rabbitmq.virtual-host=/
+    
+    # Colas
+    rabbitmq.queue.all-events=kpi.all_events

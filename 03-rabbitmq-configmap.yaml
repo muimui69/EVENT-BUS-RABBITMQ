@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: rabbitmq-system
+data:
+  rabbitmq.conf: |
+    ## Clustering y configuración básica
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.node_cleanup.interval = 30
+    cluster_partition_handling = autoheal
+    
+    ## Rendimiento
+    total_memory_available_override_value = 1073741824
+    vm_memory_high_watermark.relative = 0.8
+    
+    ## Seguridad
+    loopback_users.guest = false
+    
+    ## Gestión
+    management.tcp.port = 15672
+    management.load_definitions = /etc/rabbitmq/definitions.json
+    
+  definitions.json: |
+    {
+      "vhosts": [
+        {"name": "/"}
+      ],
+      "exchanges": [
+        {"name": "erp-exchange", "vhost": "/", "type": "topic", "durable": true, "auto_delete": false}
+      ],
+      "queues": [
+        {"name": "ml-sync-user", "vhost": "/", "durable": true, "auto_delete": false},
+        {"name": "ml-sync-solicitude", "vhost": "/", "durable": true, "auto_delete": false},
+        {"name": "ml-sync-offer", "vhost": "/", "durable": true, "auto_delete": false},
+        {"name": "ml-sync-loan", "vhost": "/", "durable": true, "auto_delete": false},
+        {"name": "ml-sync-monthly_payment", "vhost": "/", "durable": true, "auto_delete": false},
+        {"name": "ml-dead-letter", "vhost": "/", "durable": true, "auto_delete": false}
+      ],
+      "bindings": [
+        {"source": "erp-exchange", "vhost": "/", "destination": "ml-sync-user", "destination_type": "queue", "routing_key": "user.*"},
+        {"source": "erp-exchange", "vhost": "/", "destination": "ml-sync-solicitude", "destination_type": "queue", "routing_key": "solicitude.*"},
+        {"source": "erp-exchange", "vhost": "/", "destination": "ml-sync-offer", "destination_type": "queue", "routing_key": "offer.*"},
+        {"source": "erp-exchange", "vhost": "/", "destination": "ml-sync-loan", "destination_type": "queue", "routing_key": "loan.*"},
+        {"source": "erp-exchange", "vhost": "/", "destination": "ml-sync-monthly_payment", "destination_type": "queue", "routing_key": "monthly_payment.*"}
+      ],
+      "policies": [
+        {
+          "name": "ha-policy",
+          "vhost": "/",
+          "pattern": "ml-sync-.*",
+          "definition": {
+            "ha-mode": "all",
+            "ha-sync-mode": "automatic",
+            "dead-letter-exchange": "erp-exchange",
+            "dead-letter-routing-key": "error.message"
+          }
+        }
+      ]
+    }

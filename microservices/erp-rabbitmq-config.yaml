@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: erp-rabbitmq-config
+  namespace: default
+data:
+  rabbitmq.properties: |
+    spring.rabbitmq.host=rabbitmq.middleware.svc.cluster.local
+    spring.rabbitmq.port=5672
+    spring.rabbitmq.username=erp_service
+    spring.rabbitmq.password=${RABBITMQ_ERP_PASSWORD}
+    spring.rabbitmq.virtual-host=/
+    
+    # Configuración de intercambios
+    rabbitmq.exchange.erp-data=erp.data_changes
+    rabbitmq.exchange.ml-score=ml.score_updates
+    
+    # Colas
+    rabbitmq.queue.ml-score-updates=erp.ml_score_updates
