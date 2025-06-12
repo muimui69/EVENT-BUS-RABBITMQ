@@ -1,0 +1,124 @@
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: rabbitmq
+#   namespace: bi-system
+# spec:
+#   serviceName: rabbitmq
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: rabbitmq
+#   template:
+#     metadata:
+#       labels:
+#         app: rabbitmq
+#     spec:
+#       containers:
+#       - name: rabbitmq
+#         image: rabbitmq:3-alpine
+#         ports:
+#         - name: http
+#           containerPort: 15672
+#         - name: amqp
+#           containerPort: 5672
+#         env:
+#         - name: RABBITMQ_DEFAULT_USER
+#           value: "user"
+#         - name: RABBITMQ_DEFAULT_PASS
+#           value: "password"
+#         volumeMounts:
+#         - name: config-volume
+#           mountPath: /etc/rabbitmq/rabbitmq.conf
+#           subPath: rabbitmq.conf
+#         - name: plugins-volume
+#           mountPath: /etc/rabbitmq/enabled_plugins
+#           subPath: enabled_plugins
+#         - name: data
+#           mountPath: /var/lib/rabbitmq
+#       volumes:
+#       - name: config-volume
+#         configMap:
+#           name: rabbitmq-config
+#           items:
+#           - key: rabbitmq.conf
+#             path: rabbitmq.conf
+#       - name: plugins-volume
+#         configMap:
+#           name: rabbitmq-config
+#           items:
+#           - key: enabled_plugins
+#             path: enabled_plugins
+#   volumeClaimTemplates:
+#   - metadata:
+#       name: data
+#     spec:
+#       accessModes: ["ReadWriteOnce"]
+#     resources:
+#       requests:
+#         memory: "128Mi"
+#         cpu: "100m"
+#       limits:
+#         memory: "256Mi"
+#         cpu: "200m"
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: bi-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-alpine
+        ports:
+        - name: http
+          containerPort: 15672
+        - name: amqp
+          containerPort: 5672
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "user"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "password"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/rabbitmq/rabbitmq.conf
+          subPath: rabbitmq.conf
+        - name: plugins-volume
+          mountPath: /etc/rabbitmq/enabled_plugins
+          subPath: enabled_plugins
+        - name: data
+          mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: config-volume
+        configMap:
+          name: rabbitmq-config
+          items:
+          - key: rabbitmq.conf
+            path: rabbitmq.conf
+      - name: plugins-volume
+        configMap:
+          name: rabbitmq-config
+          items:
+          - key: enabled_plugins
+            path: enabled_plugins
+      - name: data
+        emptyDir: {}  # Usa emptyDir en lugar de PVC
